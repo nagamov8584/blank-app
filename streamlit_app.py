@@ -1,8 +1,7 @@
 import streamlit as st
 import pandas as pd
 from streamlit_gsheets import GSheetsConnection
-#from streamlit_pdf_viewer import pdf_viewer
-from streamlit_pdf_reader import pdf_reader
+from streamlit_pdf_viewer import pdf_viewer
 import time
 import os
 
