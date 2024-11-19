@@ -6,3 +6,5 @@ pdf2image
 Pillow
 tesseract
 st-gsheets-connection 
+pip install streamlit-pdf-viewer
+#streamlit-pdf-reader

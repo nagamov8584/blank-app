@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 from streamlit_gsheets import GSheetsConnection
+#from streamlit_pdf_viewer import pdf_viewer
+from streamlit_pdf_reader import pdf_reader
 import time
 import os
 
@@ -10,9 +12,7 @@ if 'uploaded_files' not in st.session_state:
 ###
 
 st.title("🎈 My new app")
-st.write(
-    "Let's start building! For help and inspiration, head over to [docs.streamlit.io](https://docs.streamlit.io/)."
-)
+st.write()
 
 
 upload = st.file_uploader(
@@ -25,9 +25,8 @@ if upload is not None:
 upload_db = pd.DataFrame(columns=('old_name', 'new_name'))
 
 for uploaded_file in st.session_state.uploaded_files:
-    #bytes_data = uploaded_file.read()
     st.write("filename is -> ", uploaded_file.name)
-    #st.write(bytes_data)
+    
 
 
 #with st.sidebar:
@@ -38,7 +37,7 @@ for uploaded_file in st.session_state.uploaded_files:
 #        time.sleep(1)
 #    st.success("Done!")
 
-option = st.radio("Choose one option", options=["None", "S", "W"], index=1)
+option = st.radio("Choose one option", options=["None", "S", "W"], index=0)
 
 conn = st.connection("gsheets", type=GSheetsConnection)
 
