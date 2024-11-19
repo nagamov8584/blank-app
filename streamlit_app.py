@@ -2,8 +2,10 @@ import streamlit as st
 import pandas as pd
 from streamlit_gsheets import GSheetsConnection
 from streamlit_pdf_viewer import pdf_viewer
+from streamlit_extras.add_vertical_space import add_vertical_space
 import time
 import os
+import re
 
 ### Keep uploaded files
 if 'uploaded_files' not in st.session_state:
@@ -13,7 +15,14 @@ if 'uploaded_files' not in st.session_state:
 st.title("🎈 My new app")
 st.write()
 
+### FUND DB
+conn = st.connection("gsheets", type=GSheetsConnection)
+url = "https://docs.google.com/spreadsheets/d/1Mh5iqGrvVoyaeorB8jfrJdTV4oZ_tyW7ZMiMLx5dL9w/edit"
+data = conn.read(spreadsheet=url, usecols=[0, 1, 2])
+###
 
+
+### PDF upload
 upload = st.file_uploader(
     "Загружаем файлики", accept_multiple_files=True
 )
@@ -25,39 +34,58 @@ upload_db = pd.DataFrame(columns=('old_name', 'new_name'))
 
 for uploaded_file in st.session_state.uploaded_files:
     st.write("filename is -> ", uploaded_file.name)
-    
+### end of PDF upload   
 
 
-#with st.sidebar:
-#    with st.echo():
-#        st.write("This code will be printed to the sidebar.")
 
-#    with st.spinner("Loading..."):
-#        time.sleep(1)
-#    st.success("Done!")
 
+
+
+
+
+
+
+add_vertical_space(3)
+
+
+
+
+
+
+### PDF rename
+statements = []
+for uploaded_file in st.session_state.uploaded_files:
+    if re.search(r'\d{20}', uploaded_file.name):
+        print(uploaded_file.name)
+        statements.append([uploaded_file.name, re.search(r'\d{20}', uploaded_file.name)[0]])
+upload_db = pd.DataFrame(statements, columns=['upl_filename', 'account'])
+st.dataframe(upload_db)
+
+add_vertical_space(3)
+
+rename_db = upload_db.merge(data ,how='left', on='account')[['account', 'upl_filename', 'file_name', 'class']]
+st.dataframe(rename_db)
+### end of PDF rename
+
+
+
+
+
+
+add_vertical_space(3)
+
+
+
+
+
+
+### Fund DB
 option = st.radio("Choose one option", options=["None", "S", "W"], index=0)
 
-conn = st.connection("gsheets", type=GSheetsConnection)
-
-url = "https://docs.google.com/spreadsheets/d/1Mh5iqGrvVoyaeorB8jfrJdTV4oZ_tyW7ZMiMLx5dL9w/edit"
-
 if option == "S":
-    data = conn.read(spreadsheet=url, usecols=[0, 1, 2])
     st.dataframe(data[data['class'] == 'S'])
 elif option == "W":
-    data = conn.read(spreadsheet=url, usecols=[0, 1, 2])
     st.dataframe(data[data['class'] == 'W'])
 else:
     pass
-
-
-#df = conn.read()
-
-# Print results.
-#for row in df.itertuples():
-#    st.write(f"{row.Account} has a :{row.File_name}:")
-
-#df = conn.read(worksheet="Sheet1")
-
-#st.dataframe(df)
+###
