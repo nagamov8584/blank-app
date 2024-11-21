@@ -8,3 +8,5 @@ tesseract
 st-gsheets-connection 
 streamlit-pdf-viewer
 streamlit_extras
+zipfile
+io
