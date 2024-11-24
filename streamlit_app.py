@@ -16,9 +16,8 @@ if 'uploaded_files' not in st.session_state:
     st.session_state.uploaded_files = None
 ###
 
-st.title("🎈 My new app")
+st.title("🎈 My new app  🦜")
 #st.write('st.session_state.uploaded_files is EMPTY:', st.session_state.uploaded_files is None)
-
 
 ### FUND DB ####################################################################################
 #
@@ -42,6 +41,7 @@ upload = st.file_uploader(
     "Загружаем файлики", accept_multiple_files=True
 )
 
+
 if upload is not None:
     st.session_state.uploaded_files = upload
 ### 2.
@@ -55,10 +55,40 @@ for uploaded_file in st.session_state.uploaded_files:
         #print(uploaded_file.name)
         statements.append([uploaded_file.name, if_found[0]])
 upload_db = pd.DataFrame(statements, columns=['upl_filename', 'account'])
+rename_db = upload_db.merge(data ,how='left', on='account')[
+    ['account', 'upl_filename', 'file_name', 'class']]
+
+
+################################################################################################ 
 
 if_show_upload = st.toggle('Show upload')
-if if_show_upload:
+if if_show_upload and not len(upload) == 0:
     st.dataframe(upload_db, use_container_width=True)
+elif if_show_upload and len(upload) == 0:
+    st.warning('No files uploaded')
+
+if_show_rename = st.toggle('Show rename')
+if if_show_rename and not len(upload) == 0:
+    st.dataframe(rename_db, use_container_width=True)
+elif if_show_rename and len(upload) == 0:
+    st.warning('No files uploaded')
+
+
+preview = st.button("Preview")
+
+if 'preview_state' not in st.session_state:
+    st.session_state.preview_state = False
+if preview or st.session_state.preview_state:
+    st.session_state.preview_state = True
+    selected_fund = st.pills('test pill 💊', options=rename_db['file_name'])
+
+    if selected_fund:
+        slider_width = st.select_slider(
+            "Select size",
+            options=list(range(700, 2000, 100)),)
+        
+        pdf_viewer(upload[0].getvalue(), width=slider_width)
+
 
 ################################################################################################
 col1, col2, col3 = st.columns(3)
@@ -75,11 +105,23 @@ col3.metric("Нераспознано", nonrecogn_m, nonrecogn_m, delta_color='i
 #add_vertical_space(3)
 #add_vertical_space(3)
 
-rename_db = upload_db.merge(data ,how='left', on='account')[['account', 'upl_filename', 'file_name', 'class']]
-st.dataframe(rename_db, use_container_width=True)
+#rename_db = upload_db.merge(data ,how='left', on='account')[['account', 'upl_filename', 'file_name', 'class']]
+
+add_vertical_space(3)
+
+
 ### end of PDF rename
 ################################################################################################
+### for Bytes objects
+def recognize(faces , mirror):
+    recognized = []
+    for face in faces:
+        if face.name in mirror:
+            recognized.append(face)
+    
+    st.write(recognized)
 
+    return recognized
 
 ##############################################
 def create_zip(pdf_files, db=rename_db):
@@ -87,21 +129,24 @@ def create_zip(pdf_files, db=rename_db):
     
     # Create a Zip file in memory
     with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+
         for pdf in pdf_files:
-            pdf_name = db[db['upl_filename'] == pdf.name]['file_name'].values[0] + '.pdf'
-            st.write(pdf_name)
-            zip_file.writestr(pdf_name, pdf.getvalue())
+            try:    
+                pdf_name = db[db['upl_filename'] == pdf.name]['file_name'].values[0] + '.pdf'
+                st.write(pdf_name)
+                zip_file.writestr(pdf_name, pdf.getvalue())
+            except:
+                st.markdown('''❌''' + pdf.name + ''' :red[was not added]''')
     
     zip_buffer.seek(0)  # Rewind the buffer to the beginning
     return zip_buffer
+
+
 ##############################################
 
 
 add_vertical_space(3)
 
-#for item in upload:
-    #st.write(type(item.name))
-    #st.write(rename_db[rename_db['upl_filename'] == item.name]['file_name'].values[0] + '.pdf')
 
 
 ### Fund DB
@@ -116,9 +161,6 @@ else:
 ###
 
 
-###
-
-###
 
 if st.button('Download ZIP of PDFs'):
     if upload:
@@ -127,7 +169,8 @@ if st.button('Download ZIP of PDFs'):
             label="Download ZIP",
             data=zip_buffer,
             file_name="pdf_files.zip",
-            mime="application/zip"
+            mime="application/zip",
+            icon=":material/barcode:"
         )
     else:
         st.warning("Please upload some PDF files first.")
