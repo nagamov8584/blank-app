@@ -24,7 +24,7 @@ st.title("🎈 My new app  🦜")
 # Upload fund data to app from Google sheets
 #
 conn = st.connection("gsheets", type=GSheetsConnection)
-url = "https://docs.google.com/spreadsheets/d/1Mh5iqGrvVoyaeorB8jfrJdTV4oZ_tyW7ZMiMLx5dL9w/edit"
+url = "https://docs.google.com/spreadsheets/d/1ftUQL2RRga6sXe7gqjv19FmUDinwtkR-o_UNmFBFMXs/edit"
 data = conn.read(spreadsheet=url, usecols=[0, 1, 2])
 #
 # <placeholder for future DB extension>
